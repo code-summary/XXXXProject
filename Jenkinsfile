@@ -1,24 +1,16 @@
 pipeline {
     agent any
+    parameters {
+        extendedChoice description: 'Which branch to deploy?',
+        multiSelectDelimiter: ',', name: 'BRANCH', quoteValue: false,
+        saveJSONParameterToFile: false, type: 'PT_SINGLE_SELECT', value: 'master\nfeature-1\nfeature-2'
+    }
     stages {
-        stage('Select Branch') {
+        stage('Select Path and Port') {
             steps {
                 script {
-                    env.BRANCH_NAME = input(
-                        id: 'branch',
-                        message: 'Which branch to deploy?',
-                        parameters: [string(defaultValue: 'master', description: 'Branch name', name: 'BRANCH')]
-                    )
-                    env.DEPLOY_PATH = input(
-                        id: 'path',
-                        message: 'Where to deploy?',
-                        parameters: [string(defaultValue: '/opt/myapp', description: 'Deploy path', name: 'DEPLOY_PATH')]
-                    )
-                    env.PORT = input(
-                        id: 'port',
-                        message: 'Which port to use?',
-                        parameters: [string(defaultValue: '8080', description: 'Port number', name: 'PORT')]
-                    )
+                    env.DEPLOY_PATH = "${params.BRANCH}".equals("master") ? "/opt/myapp" : "/opt/myapp-${params.BRANCH}"
+                    env.PORT = "${params.BRANCH}".equals("master") ? "8080" : "8081"
                 }
             }
         }
